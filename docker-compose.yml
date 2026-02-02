@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  postgres: 
+    image: postgres:15-alpine
+    container_name: edms_postgres
+    environment:
+      POSTGRES_DB: edms_dev
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - edms_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d edms_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio: 
+    image: minio/minio:latest
+    container_name: edms_minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - edms_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio-init: 
+    image: minio/mc:latest
+    container_name: edms_minio_init
+    depends_on:
+      minio: 
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      echo 'Waiting for MinIO...';
+      sleep 5;
+      /usr/bin/mc alias set edms http://minio:9000 minioadmin minioadmin123;
+      /usr/bin/mc mb edms/edms --ignore-existing;
+      /usr/bin/mc anonymous set download edms/edms;
+      echo 'Bucket edms created successfully!';
+      exit 0;
+      "
+    networks:
+      - edms_network
+
+  redis: 
+    image: redis:7-alpine
+    container_name: edms_redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - edms_network
+  
+volumes:
+  postgres_data:
+  minio_data:
+  redis_data:
+
+networks:
+  edms_network:
+    driver: bridge
