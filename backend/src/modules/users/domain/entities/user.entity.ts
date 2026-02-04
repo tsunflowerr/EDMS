@@ -15,7 +15,7 @@ export class User {
     password: string;
 
     @Column({ nullable: true })
-    fullname: string;
+    fullName: string;
 
     @Column({ nullable: true })
     avatar: string;
