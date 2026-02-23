@@ -13,7 +13,8 @@ import { FolderRepository } from "./infrastructure/repositories/folder.repositor
     providers: [FolderService, {
         provide: 'IFolderRepository',
         useClass: FolderRepository
-    }]
+    }],
+    exports: [FolderService]
 })
 
 export class FolderModule { }

@@ -15,11 +15,8 @@ export class FolderRepository implements IFolderRepository {
         return this.repo.findOne({ where: { id } })
     }
 
-    async findByParentId(parentId: string | null): Promise<Folder[]> {
-        const whereCondition = parentId === null
-            ? { parent: IsNull() }
-            : { parent: { id: parentId } };
-        return this.repo.find({ where: whereCondition, relations: ['children', 'createdBy'] })
+    async findByParentId(parentId: string): Promise<Folder[]> {
+        return this.repo.find({ where: { parent: { id: parentId } }, relations: ['children', 'createdBy'] })
     }
 
     async findRootFolders(userId: string): Promise<Folder[]> {
