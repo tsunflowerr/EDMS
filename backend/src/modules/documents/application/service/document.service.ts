@@ -4,6 +4,8 @@ import { CreateDocumentDto } from "../dto/create-document.dto";
 import { Document } from "../../domain/entities/document.entity";
 import { FolderService } from "src/modules/folders/application/services/folder.service";
 import { UpdateDocumentDto } from "../dto/update-document.dto";
+import type { IStorageService } from "src/modules/storage/domain/storage.service.interface";
+
 
 @Injectable()
 export class DocumentService {
@@ -11,18 +13,24 @@ export class DocumentService {
         @Inject('IDocumentRepository')
         private readonly documentRepository: IDocumentRepository,
 
+        @Inject('IStorageService')
+        private readonly storageService: IStorageService,
+
         private readonly folderService: FolderService
     ) { }
-    async create(dto: CreateDocumentDto, userId: string): Promise<Document> {
+    async create(dto: CreateDocumentDto, file: Express.Multer.File, userId: string): Promise<Document> {
+        const key = `documents/${Date.now()}-${file.originalname}`
+        await this.storageService.upload(key, file.buffer, file.mimetype)
+
         const document = new Document();
         if (dto.folderId) {
             const folder = await this.folderService.findById(dto.folderId);
             document.folder = folder
         }
-        document.name = dto.name
-        document.mimeType = dto.mimeType
-        document.size = dto.size
-        document.storageKey = dto.storageKey
+        document.name = file.originalname
+        document.mimeType = file.mimetype
+        document.size = file.size
+        document.storageKey = key
         document.uploadedBy = { id: userId } as any
         return this.documentRepository.save(document)
     }

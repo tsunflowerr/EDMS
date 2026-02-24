@@ -1,8 +1,9 @@
-import { Body, Controller, Post, UseGuards, Get, Param, Patch, Delete, Request } from "@nestjs/common";
+import { Body, Controller, Post, UseGuards, Get, Param, Patch, Delete, Request, UseInterceptors, UploadedFile } from "@nestjs/common";
 import { JwtAuthGuard } from "src/modules/auth/infrastructure/guards/jwt-auth.guard";
 import { DocumentService } from "../../application/service/document.service";
 import { CreateDocumentDto } from "../../application/dto/create-document.dto";
 import { UpdateDocumentDto } from "../../application/dto/update-document.dto";
+import { FileInterceptor } from "@nestjs/platform-express";
 @Controller('documents')
 @UseGuards(JwtAuthGuard)
 export class DocumentController {
@@ -11,8 +12,9 @@ export class DocumentController {
     ) { }
 
     @Post()
-    create(@Body() dto: CreateDocumentDto, @Request() req: any) {
-        return this.documentService.create(dto, req.user.userId)
+    @UseInterceptors(FileInterceptor('file'))
+    create(@UploadedFile() file: Express.Multer.File, @Body() dto: CreateDocumentDto, @Request() req: any) {
+        return this.documentService.create(dto, file, req.user.userId)
     }
 
     @Get('/:id')
