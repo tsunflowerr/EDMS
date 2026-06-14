@@ -21,7 +21,7 @@ export class FolderService {
             }
             folder.parent = parentFolder;
         }
-        folder.createdBy = { id: userId } as any
+        folder.createdById = userId;
         return this.folderRepository.save(folder)
     }
 

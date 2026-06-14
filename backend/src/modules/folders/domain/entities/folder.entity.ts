@@ -20,6 +20,9 @@ export class Folder {
     @JoinColumn({ name: 'createdBy' })
     createdBy: User
 
+    @Column({ name: 'createdBy' })
+    createdById: string
+
     @CreateDateColumn()
     createdAt: Date
 

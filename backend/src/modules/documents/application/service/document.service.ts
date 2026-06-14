@@ -31,7 +31,7 @@ export class DocumentService {
         document.mimeType = file.mimetype
         document.size = file.size
         document.storageKey = key
-        document.uploadedBy = { id: userId } as any
+        document.uploadedById = userId
         return this.documentRepository.save(document)
     }
 

@@ -4,6 +4,7 @@ import { DocumentService } from "../../application/service/document.service";
 import { CreateDocumentDto } from "../../application/dto/create-document.dto";
 import { UpdateDocumentDto } from "../../application/dto/update-document.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { FileValidationPipe } from "src/common/pipes/file-validation.pipe";
 @Controller('documents')
 @UseGuards(JwtAuthGuard)
 export class DocumentController {
@@ -13,7 +14,7 @@ export class DocumentController {
 
     @Post()
     @UseInterceptors(FileInterceptor('file'))
-    create(@UploadedFile() file: Express.Multer.File, @Body() dto: CreateDocumentDto, @Request() req: any) {
+    create(@UploadedFile(new FileValidationPipe()) file: Express.Multer.File, @Body() dto: CreateDocumentDto, @Request() req: any) {
         return this.documentService.create(dto, file, req.user.userId)
     }
 

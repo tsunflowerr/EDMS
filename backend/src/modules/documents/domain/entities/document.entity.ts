@@ -27,6 +27,9 @@ export class Document {
     @JoinColumn({ name: 'userId' })
     uploadedBy: User
 
+    @Column({ name: 'userId' })
+    uploadedById: string
+
     @CreateDateColumn()
     createdAt: Date
 
